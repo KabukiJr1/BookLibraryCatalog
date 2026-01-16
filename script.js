@@ -1,92 +1,93 @@
-:root {
-    --primary: #2563eb;
-    --dark: #1e293b;
-    --light: #f8fafc;
-    --danger: #ef4444;
-    --success: #22c55e;
+// Initial Book Data (State)
+let myLibrary = [
+    { id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald", isBorrowed: false },
+    { id: 2, title: "1984", author: "George Orwell", isBorrowed: true }
+];
+
+// 1. Add Book Function
+function handleAddBook() {
+    const title = document.getElementById('titleInput').value;
+    const author = document.getElementById('authorInput').value;
+
+    if (title && author) {
+        const newBook = {
+            id: Date.now(),
+            title: title,
+            author: author,
+            isBorrowed: false
+        };
+        myLibrary.push(newBook);
+        clearInputs();
+        render();
+    }
 }
 
-body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background-color: var(--light);
-    color: var(--dark);
-    margin: 0;
-    padding: 20px;
+// 2. Remove Book Function
+function removeBook(id) {
+    myLibrary = myLibrary.filter(book => book.id !== id);
+    render();
 }
 
-.container { max-width: 1100px; margin: 0 auto; }
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
+// 3. Toggle Borrow Status
+function toggleStatus(id) {
+    const book = myLibrary.find(b => b.id === id);
+    if (book) {
+        book.isBorrowed = !book.isBorrowed;
+        render();
+    }
 }
 
-h1 span { color: var(--primary); }
-
-.stats-bar { display: flex; gap: 20px; }
-.stat-item { background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-weight: bold; }
-
-.controls {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
-    margin-bottom: 40px;
+// 4. Statistics Function (Key Concept: Functions for Stats)
+function updateStats() {
+    const total = myLibrary.length;
+    const borrowed = myLibrary.filter(b => b.isBorrowed).length;
+    
+    const statsContainer = document.getElementById('stats-container');
+    statsContainer.innerHTML = `
+        <div class="stat-item">Total: ${total}</div>
+        <div class="stat-item">Borrowed: ${borrowed}</div>
+        <div class="stat-item">Available: ${total - borrowed}</div>
+    `;
 }
 
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+// 5. Search Function (Key Concept: Loops for searching)
+function handleSearch() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    render(query);
 }
 
-input {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: 2px solid #e2e8f0;
-    border-radius: 6px;
-    box-sizing: border-box;
+// 6. Render Function
+function render(filterTerm = "") {
+    const grid = document.getElementById('libraryGrid');
+    grid.innerHTML = "";
+
+    // Loop through library
+    myLibrary.forEach(book => {
+        if (book.title.toLowerCase().includes(filterTerm) || book.author.toLowerCase().includes(filterTerm)) {
+            const card = document.createElement('div');
+            card.className = 'book-card card';
+            card.innerHTML = `
+                <h3>${book.title}</h3>
+                <p>by ${book.author}</p>
+                <span class="status-badge ${book.isBorrowed ? 'borrowed' : 'available'}">
+                    ${book.isBorrowed ? 'Borrowed' : 'Available'}
+                </span>
+                <div style="margin-top: 15px;">
+                    <button onclick="toggleStatus(${book.id})" class="btn-primary" style="width: auto;">Toggle Status</button>
+                    <button onclick="removeBook(${book.id})" class="remove-btn">Remove</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+    });
+
+    updateStats();
 }
 
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    width: 100%;
+function clearInputs() {
+    document.getElementById('titleInput').value = "";
+    document.getElementById('authorInput').value = "";
 }
 
-.library-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.book-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    border-left: 5px solid var(--primary);
-    position: relative;
-    transition: transform 0.2s;
-}
-
-.book-card:hover { transform: translateY(-5px); }
-
-.status-badge {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-}
-
-.borrowed { background: #fee2e2; color: var(--danger); }
-.available { background: #dcfce7; color: var(--success); }
-
-.remove-btn { margin-top: 15px; background: none; border: none; color: var(--danger); cursor: pointer; text-decoration: underline; }
+// Initial Load
+render();
